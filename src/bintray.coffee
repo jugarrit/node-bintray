@@ -1,14 +1,14 @@
 _ = require "lodash"
 Rest = require "./rest"
 common = require "./common"
-sendFile = require("restler").file
+fs = require("fs")
 
 module.exports = class Bintray
 
   @apiBaseUrl = "https://api.bintray.com"
   @downloadsHost = "http://dl.bintray.com"
   @apiVersion = "1.0"
-  
+
   config:
     debug: false
     baseUrl: Bintray.apiBaseUrl
@@ -21,7 +21,7 @@ module.exports = class Bintray
   setEndpointBase: ->
     @endpointBase = "#{@organization}/#{@repository}"
 
-  selectRepository: (repository) -> 
+  selectRepository: (repository) ->
     @repository = repository
     @setEndpointBase()
 
@@ -29,7 +29,7 @@ module.exports = class Bintray
     @organization = organization
     @setEndpointBase()
 
-  getRepositories: -> 
+  getRepositories: ->
     endpoint = "/repos/#{@organization}"
     return @rest.get endpoint
 
@@ -37,32 +37,32 @@ module.exports = class Bintray
     endpoint = "/repos/#{@endpointBase}"
     return @rest.get endpoint
 
-  getPackages: (start = 0, startName) -> 
+  getPackages: (start = 0, startName) ->
     endpoint = "/repos/#{@endpointBase}/packages?start_pos=#{start}" + (if startName then "&start_name=" + startName else "")
     return @rest.get endpoint
 
-  getPackage: (name) -> 
+  getPackage: (name) ->
     endpoint = "/packages/#{@endpointBase}/#{name}"
     return @rest.get endpoint
 
-  createPackage: (packageObj) -> 
-    endpoint = "/packages/#{@endpointBase}" 
+  createPackage: (packageObj) ->
+    endpoint = "/packages/#{@endpointBase}"
     return @rest.post endpoint, {
       data: JSON.stringify packageObj
     }
 
-  deletePackage: (name) -> 
+  deletePackage: (name) ->
     endpoint = "/packages/#{@endpointBase}/#{name}"
     return @rest.del endpoint
 
-  updatePackage: (name, packageObj) -> 
+  updatePackage: (name, packageObj) ->
     endpoint = "/packages/#{@endpointBase}/#{name}"
     return @rest.patch endpoint, {
       data: JSON.stringify packageObj
     }
 
-  getPackageVersion: (name, version = "_latest") -> 
-    endpoint = "/packages/#{@endpointBase}/#{name}/versions/#{version}" 
+  getPackageVersion: (name, version = "_latest") ->
+    endpoint = "/packages/#{@endpointBase}/#{name}/versions/#{version}"
     return @rest.get endpoint
 
   getPackageUrl: (pkgname, repository) ->
@@ -82,7 +82,7 @@ module.exports = class Bintray
           if _.isArray data
             data = data[0]
             if data
-              response.data = { url: "#{Bintray.downloadsHost}/#{data.owner}/#{data.repo}/#{data.path}" } 
+              response.data = { url: "#{Bintray.downloadsHost}/#{data.owner}/#{data.repo}/#{data.path}" }
               deferred.resolve response
             else
               deferred.reject notFound()
@@ -92,32 +92,32 @@ module.exports = class Bintray
         deferred.reject error
 
     return deferred.promise
- 
-  createPackageVersion: (name, versionObj) -> 
+
+  createPackageVersion: (name, versionObj) ->
     endpoint = "/packages/#{@endpointBase}/#{name}/versions"
     return @rest.post endpoint, {
       data: JSON.stringify versionObj
     }
 
-  deletePackageVersion: (name, version) -> 
+  deletePackageVersion: (name, version) ->
     endpoint = "/packages/#{@endpointBase}/#{name}/versions/#{version}"
     return @rest.del endpoint
 
-  updatePackageVersion: (name, version, versionObj) -> 
+  updatePackageVersion: (name, version, versionObj) ->
     endpoint = "/packages/#{@endpointBase}/#{name}/versions/#{version}"
     return @rest.post endpoint, {
       data: JSON.stringify versionObj
     }
 
-  getPackageAttrs: (name, attributes) -> 
+  getPackageAttrs: (name, attributes) ->
     endpoint = "/packages/#{@endpointBase}/#{name}/attributes?names=#{attributes}"
     return @rest.get endpoint
 
-  getVersionAttrs: (name, attributes, version = '_latest') -> 
+  getVersionAttrs: (name, attributes, version = '_latest') ->
     endpoint = "/packages/#{@endpointBase}/#{name}/versions/#{version}/attributes?names=#{attributes}"
     return @rest.get endpoint
 
-  setPackageAttrs: (name, attributesObj, version) -> 
+  setPackageAttrs: (name, attributesObj, version) ->
     endpoint = "/packages/#{@endpointBase}/#{name}"
 
     if version
@@ -129,7 +129,7 @@ module.exports = class Bintray
       data: JSON.stringify attributesObj
     }
 
-  updatePackageAttrs: (name, attributesObj, version) -> 
+  updatePackageAttrs: (name, attributesObj, version) ->
     endpoint = "/packages/#{@endpointBase}/#{name}"
 
     if version
@@ -141,7 +141,7 @@ module.exports = class Bintray
       data: JSON.stringify attributesObj
     }
 
-  deletePackageAttrs: (name, names, version) -> 
+  deletePackageAttrs: (name, names, version) ->
     endpoint = "/packages/#{@endpointBase}/#{name}"
 
     if version
@@ -153,7 +153,7 @@ module.exports = class Bintray
 
     return @rest.del endpoint
 
-  searchRepository: (name, description) -> 
+  searchRepository: (name, description) ->
     endpoint = "/search/repos?"
     endpoint += "name=#{name}" if name
     endpoint += "&desc=#{description}" if description
@@ -167,11 +167,11 @@ module.exports = class Bintray
     endpoint += "&repo=#{repository}" if repository?
     return @rest.get endpoint
 
-  searchUser: (name) -> 
+  searchUser: (name) ->
     endpoint = "/search/users?name=#{name}"
     return @rest.get endpoint
 
-  searchAttributes: (attributesObj, name) -> 
+  searchAttributes: (attributesObj, name) ->
     endpoint = "/search/attributes/#{@endpointBase}"
 
     if name
@@ -181,12 +181,12 @@ module.exports = class Bintray
       data: JSON.stringify attributesObj
     }
 
-  searchFile: (name, repository) -> 
+  searchFile: (name, repository) ->
     endpoint = "/search/file?name=#{encodeURIComponent(name)}"
     endpoint += "&repo=#{repository}" if repository
     return @rest.get endpoint
 
-  searchFileChecksum: (hash, repository) -> 
+  searchFileChecksum: (hash, repository) ->
     endpoint = "/search/file?sha1=#{name}"
     endpoint += "&repo=#{repository}" if repository
     return @rest.get endpoint
@@ -195,46 +195,40 @@ module.exports = class Bintray
     endpoint = "/users/#{username}"
     return @rest.get endpoint
 
-  getUserFollowers: (username, startPosition = 0) -> 
+  getUserFollowers: (username, startPosition = 0) ->
     endpoint = "/users/#{username}/followers"
     endpoint += "?startPosition=#{startPosition}" if startPosition
     return @rest.get endpoint
 
-  uploadPackage: (name, version, filePath, remotePath = '/', publish = false, explode = false, mimeType = "application/octet-stream") -> 
+  uploadPackage: (name, version, filePath, remotePath = '/', publish = false, explode = false, mimeType = "application/octet-stream") ->
     endpoint = "/content/#{@endpointBase}/#{name}/#{version}/#{remotePath}" + (if publish then ";publish=1" else "") + (if explode then ";explode=1" else "")
     return @rest.put endpoint, {
-      multipart: true
-      data: 
-        "package[message]": "Package upload: #{name} (#{version})"
-        "package[file]": sendFile filePath, null, common.getFileSize(filePath), null, mimeType
+      data: fs.readFileSync filePath, "UTF-8"
     }
 
-  publishPackage: (name, version, discard = false) -> 
+  publishPackage: (name, version, discard = false) ->
     endpoint = "/content/#{@endpointBase}/#{name}/#{version}/publish"
     return @rest.post endpoint, {
       data: JSON.stringify { discard: discard }
     }
 
-  mavenUpload: (name, version, filePath, remotePath = '/', publish = true, explode = false, mimeType = "application/octet-stream") -> 
+  mavenUpload: (name, version, filePath, remotePath = '/', publish = true, explode = false, mimeType = "application/octet-stream") ->
     endpoint = "/maven/#{@endpointBase}/#{name}/#{remotePath}" + (if publish then ";publish=1" else "") + (if explode then ";explode=1" else "")
     return @rest.put endpoint, {
-      multipart: true
-      data: 
-        "package[message]": "Maven package upload: #{name} (#{version})"
-        "package[file]": sendFile filePath, null, common.getFileSize(filePath), null, mimeType
+      data: fs.readFileSync filePath, "UTF-8"
     }
 
-  getWebhooks: (repository = '') -> 
+  getWebhooks: (repository = '') ->
     endpoint = "/webhooks/#{@organization}/#{repository}"
     return @rest.get endpoint
 
-  createWebhook: (pkgname, configObj) -> 
+  createWebhook: (pkgname, configObj) ->
     endpoint = "/webhooks/#{@endpointBase}/#{pkgname}"
     return @rest.post endpoint, {
       data: JSON.stringify config
     }
 
-  testWebhook: (pkgname, version, configObj) -> 
+  testWebhook: (pkgname, version, configObj) ->
     endpoint = "/webhooks/#{@endpointBase}/#{pkgname}/#{version}"
     hmac = require("crypto").createHmac("md5", @config.password).digest("hex");
 
@@ -247,7 +241,7 @@ module.exports = class Bintray
       data: JSON.stringify configOBj
     }
 
-  deleteWebhook: (pkgname) -> 
+  deleteWebhook: (pkgname) ->
     endpoint = "/webhooks/#{@endpointBase}/#{pkgname}"
     return @rest.del endpoint
 

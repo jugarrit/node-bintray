@@ -2,6 +2,7 @@ _ = require "lodash"
 Rest = require "./rest"
 common = require "./common"
 fs = require("fs")
+request = require("request-promise-native")
 
 module.exports = class Bintray
 
@@ -202,8 +203,18 @@ module.exports = class Bintray
 
   uploadPackage: (name, version, filePath, remotePath = '/', publish = false, explode = false, mimeType = "application/octet-stream") ->
     endpoint = "/content/#{@endpointBase}/#{name}/#{version}/#{remotePath}" + (if publish then ";publish=1" else "") + (if explode then ";explode=1" else "")
-    return @rest.put endpoint, {
-      data: fs.readFileSync filePath, "UTF-8"
+    readStream = fs.createReadStream filePath
+
+    return request.put {
+      url: Bintray.apiBaseUrl + endpoint,
+      body: readStream,
+      headers: {
+        "Content-Type": mimeType
+      }
+      auth: {
+        user: @rest.options.username
+        pass: @rest.options.password
+      }
     }
 
   publishPackage: (name, version, discard = false) ->
@@ -214,8 +225,18 @@ module.exports = class Bintray
 
   mavenUpload: (name, version, filePath, remotePath = '/', publish = true, explode = false, mimeType = "application/octet-stream") ->
     endpoint = "/maven/#{@endpointBase}/#{name}/#{remotePath}" + (if publish then ";publish=1" else "") + (if explode then ";explode=1" else "")
-    return @rest.put endpoint, {
-      data: fs.readFileSync filePath, "UTF-8"
+    readStream = fs.createReadStream filePath
+
+    return request.put {
+      url: Bintray.apiBaseUrl + endpoint,
+      body: readStream,
+      headers: {
+        "Content-Type": mimeType
+      }
+      auth: {
+        user: @rest.options.username
+        pass: @rest.options.password
+      }
     }
 
   getWebhooks: (repository = '') ->

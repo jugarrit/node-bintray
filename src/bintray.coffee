@@ -1,8 +1,6 @@
 _ = require "lodash"
 Rest = require "./rest"
 common = require "./common"
-sendFile = require("restler").file
-data = require("restler").data
 fs = require("fs")
 request = require("request-promise-native")
 

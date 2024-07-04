@@ -42,14 +42,14 @@
   "dependencies": {
     "colors": "~1.1.0",
     "commander": "~2.8.0",
-    "lodash": "~3.8.0",
+    "lodash": "~4.17.21",
     "q": "~2.0.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "restler": "~3.2.0"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
+    "grunt": "~1.6.1",
     "grunt-contrib-coffee": "~0.7.0",
     "grunt-mocha-cli": "~1.0.3",
     "grunt-contrib-watch": "~0.3.1",
